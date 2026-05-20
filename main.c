@@ -3,6 +3,7 @@
 
 #include "cpu.h"
 #include "memory.h"
+#include "uptime.h"
 
 int main() {
   while (1) {
@@ -24,17 +25,27 @@ int main() {
     double total_diff = new_total - old_total;
 
     double cpu_percentage = 100.0 * (1.0 - idle_diff / total_diff);
-    
+
     // MEMORY
 
     MemoryStatus memory = memory_usage();
-    
+
     double used_memory = (memory.memtotal - memory.memavailable) / 1024.0 / 1024.0;
     double memory_total = memory.memtotal / 1024.0 / 1024.0;
+
+    // UPTIME
+
+    UptimeStats uptime = get_uptime();
+
+    int hours = uptime.uptime_seconds / 3600;
+    int minutes = ((int)uptime.uptime_seconds % 3600) / 60;
     
+    // SCREEN
+
     printf("\033[H\033[J");
 
     printf("CPU Usage: %.2f%%\n", cpu_percentage);
     printf("Memory Usage: %.2f GiB / %.2f GiB\n", used_memory, memory_total);
+    printf("Uptime: %dh %dm\n", hours, minutes);
   }
 }
