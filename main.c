@@ -4,6 +4,7 @@
 #include "cpu.h"
 #include "memory.h"
 #include "uptime.h"
+#include "process.h"
 
 int main() {
   while (1) {
@@ -24,14 +25,14 @@ int main() {
     double idle_diff = new_idle - old_idle;
     double total_diff = new_total - old_total;
 
-    double cpu_percentage = 100.0 * (1.0 - idle_diff / total_diff);
+    double cpu_percentage = 100.0 * (1.0 - idle_diff / total_diff); // CPU usage based on idle/total deltas
 
     // MEMORY
 
     MemoryStatus memory = memory_usage();
 
-    double used_memory = (memory.memtotal - memory.memavailable) / 1024.0 / 1024.0;
-    double memory_total = memory.memtotal / 1024.0 / 1024.0;
+    double used_memory = (memory.memtotal - memory.memavailable) / 1024.0 / 1024.0; // Approximate real memory usage in GiB
+    double memory_total = memory.memtotal / 1024.0 / 1024.0; // Converts the total memory into GiB
 
     // UPTIME
 
@@ -40,6 +41,13 @@ int main() {
     int hours = uptime.uptime_seconds / 3600;
     int minutes = ((int)uptime.uptime_seconds % 3600) / 60;
     
+    // PROCESSES
+
+    Process processes[3000] = {0};
+    int process_count=0;
+
+    get_processes(processes, &process_count);
+
     // SCREEN
 
     printf("\033[H\033[J");
@@ -47,5 +55,9 @@ int main() {
     printf("CPU Usage: %.2f%%\n", cpu_percentage);
     printf("Memory Usage: %.2f GiB / %.2f GiB\n", used_memory, memory_total);
     printf("Uptime: %dh %dm\n", hours, minutes);
+    for (int i = 0; i < process_count; i++) {
+      printf("PID: %s ", processes[i].pid);
+      printf("Command: %s\n", processes[i].command);
+    }
   }
 }

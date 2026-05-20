@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include "memory.h"
 
 MemoryStatus memory_usage() {
