@@ -54,7 +54,7 @@ void update_system_info(SystemInfo *info, CpuStats *old_cpu) {
   info->uptime_minutes = uptime_minutes;
   
   info->process_count = 0;
-  get_processes(info->process_list, &info->process_count);
+  get_processes(info->process_list, &info->process_count, total_diff);
   *old_cpu = new_cpu;
 }
 
@@ -71,7 +71,7 @@ int main() {
     int rows, cols;
     getmaxyx(stdscr, rows, cols);
 
-    int process_start_row = 5;
+    int process_start_row = 6;
 
     int visible_lines = rows - process_start_row;
 
