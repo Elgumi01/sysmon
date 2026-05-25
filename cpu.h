@@ -2,7 +2,7 @@
 #define CPU_H
 
 typedef struct {
-  unsigned long long user, nice, system, idle, iowait, irq, softirq;
+  unsigned long long user, nice, system, idle, iowait, irq, softirq, steal, guest;
 } CpuStats;
 
 CpuStats cpu_usage();

@@ -1,31 +1,31 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "memory.h"
 
 MemoryStatus memory_usage() {
-  FILE *f = fopen("/proc/meminfo", "r");
+  FILE *f_memory = fopen("/proc/meminfo", "r");
 
   MemoryStatus memory = {0};
 
-  if (f == NULL) {
-    printf("Error opening /proc/meminfo\n");
+  if (f_memory == NULL) {
+    fprintf(stderr, "Error opening /proc/meminfo\n");
+    fclose(f_memory);
     return memory;
   }
   
-  char line1[256];
-  char line2[256];
-  char line3[256];
-  line1[0] = 0;
-  line2[0] = 0;
-  line3[0] = 0;
+  char line[256] = {0};
+  
+  while (fgets(line, sizeof(line), f_memory)) {
+    if (strncmp(line, "MemTotal:", 9) == 0) {
+      sscanf(line, "MemTotal: %llu kB", &memory.memtotal);
+    } else if (strncmp(line, "MemAvailable:", 9) == 0) {
+      sscanf(line, "MemAvailable: %llu kB", &memory.memavailable);
+      break;
+    }
+  }
 
-  fgets(line1, sizeof(line1), f);
-  sscanf(line1, "MemTotal: %llu kB", &memory.memtotal);
-  fgets(line2, sizeof(line2), f);
-  fgets(line3, sizeof(line3), f);
-  sscanf(line3, "MemAvailable: %llu kB", &memory.memavailable);
-
-  fclose(f);
+  fclose(f_memory);
 
   return memory;
 }
