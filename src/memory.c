@@ -10,7 +10,6 @@ MemoryStatus memory_usage() {
 
   if (f_memory == NULL) {
     fprintf(stderr, "Error opening /proc/meminfo\n");
-    fclose(f_memory);
     return memory;
   }
   

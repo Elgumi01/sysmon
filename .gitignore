@@ -1,3 +1,3 @@
-monitor
+sysmon
 *.o
 *.out

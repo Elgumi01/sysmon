@@ -8,12 +8,15 @@ CpuStats cpu_usage() {
   
   if (f_cpu == NULL) {
     fprintf(stderr, "Error opening /proc/stat\n");
-    fclose(f_cpu);
     return cpu;
   }
 
   char line_cpu[256];
-  fgets(line_cpu, sizeof(line_cpu), f_cpu);
+  if (fgets(line_cpu, sizeof(line_cpu), f_cpu) == NULL) {
+    fprintf(stderr, "Error reading /proc/stat\n");
+    fclose(f_cpu);
+    return cpu;
+  }
   int fields = sscanf(line_cpu, "cpu %llu %llu %llu %llu %llu %llu %llu %llu %llu",
          &cpu.user, &cpu.nice, &cpu.system, &cpu.idle, 
          &cpu.iowait, &cpu.irq, &cpu.softirq, &cpu.steal, &cpu.guest);

@@ -8,13 +8,16 @@ UptimeStats get_uptime() {
 
   if (f_uptime == NULL) {
     fprintf(stderr, "Error opening /proc/uptime\n");
-    fclose(f_uptime);
     return stats;
   }
 
   char line[256];
 
-  fgets(line, sizeof(line), f_uptime);
+  if (fgets(line, sizeof(line), f_uptime) == NULL) {
+    fprintf(stderr, "Error reading /proc/uptime\n");
+    fclose(f_uptime);
+    return stats;
+  }
 
   if(sscanf(line, "%lf %lf", &stats.uptime_seconds, &stats.idle_seconds) != 2) {
     fprintf(stderr, "Error parsing /proc/uptime\n");

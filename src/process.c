@@ -14,7 +14,6 @@ void get_processes(Process process_list[], int *process_count, double delta_tota
 
   if (proc == NULL) {
     printf("Error opening /proc\n");
-    closedir(proc);
     return;
   }
 
@@ -51,7 +50,11 @@ void get_processes(Process process_list[], int *process_count, double delta_tota
   
     char command_line[LINE_BUFFER] = {0};
     char process_command[LINE_BUFFER] = {0};
-    fgets(command_line, sizeof(command_line), f_command);
+    if (fgets(command_line, sizeof(command_line), f_command) == NULL) {
+      fprintf(stderr, "Error opening /proc/PID/comm\n");
+      fclose(f_command);
+      return;
+    }
     sscanf(command_line, "%255s", process_command);
 
     // MEMORY
@@ -73,7 +76,11 @@ void get_processes(Process process_list[], int *process_count, double delta_tota
     unsigned long long process_stime = 0;
 
     
-    fgets(cpu_line, sizeof(cpu_line), f_cpu);
+    if (fgets(cpu_line, sizeof(cpu_line), f_cpu) == NULL) {
+      fprintf(stderr, "Error opening /proc/PID/stat\n");
+      fclose(f_cpu);
+      return;
+    }
     sscanf(cpu_line,
         "%*d (%*255[^)]) %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %llu %llu",
         &process_utime,

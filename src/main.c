@@ -68,8 +68,7 @@ int main() {
   
 
   while (1) {
-    int rows, cols;
-    getmaxyx(stdscr, rows, cols);
+    int rows = getmaxy(stdscr);
 
     int process_start_row = 6;
 
