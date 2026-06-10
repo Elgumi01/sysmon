@@ -1,4 +1,7 @@
 #include <ncurses.h>
+#include <signal.h>
+#include <stdlib.h>
+
 #include "ui.h"
 
 void init_ui() {
@@ -35,7 +38,13 @@ void pid_kill(int rows, int cols) {
   mvwprintw(win, 1, 1, "PID: ");
   wrefresh(win);
   wgetstr(win, input);
+
+  pid_t pid = (pid_t)strtol(input, NULL, 10);
+
+  kill(pid, SIGKILL);
+
   delwin(win);
+  noecho();
 }
 
 int handle_input(int *scroll_offset, int process_count, int visible_lines, int rows, int cols) {
