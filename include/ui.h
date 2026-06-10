@@ -4,7 +4,7 @@
 #include "system.h"
 
 void init_ui();
-int handle_input(int *scroll_offset, int process_count, int visible_lines);
+int handle_input(int *scroll_offset, int process_count, int visible_lines, int rows, int cols);
 void draw_ui(SystemInfo info, int scroll_offset);
 void close_ui();
 

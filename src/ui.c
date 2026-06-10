@@ -10,12 +10,44 @@ void init_ui() {
   keypad(stdscr, TRUE);
 }
 
-int handle_input(int *scroll_offset, int process_count, int visible_lines) {
+void draw_bar(int y, int x, int width, int percent) {
+    int fill = (percent * width) / 100;
+
+    mvprintw(y, x, "[");
+
+    for (int i = 0; i < width; i++) {
+        if (i < fill)
+            mvaddch(y, x + 1 + i, '#');
+        else
+            mvaddch(y, x + 1 + i, '-');
+    }
+
+    mvaddch(y, x + width + 1, ']');
+}
+
+void pid_kill(int rows, int cols) {
+  echo();
+
+  WINDOW *win = newwin(3, 40, rows-4, cols-41);
+  char input[16];
+
+  box(win, 0, 0);
+  mvwprintw(win, 1, 1, "PID: ");
+  wrefresh(win);
+  wgetstr(win, input);
+  delwin(win);
+}
+
+int handle_input(int *scroll_offset, int process_count, int visible_lines, int rows, int cols) {
   int key = getch();
   int max_scroll = process_count - visible_lines;
 
   if (key == 'q' || key == 'Q') {
     return 1;
+  }
+
+  if (key == 'k' || key == 'K') {
+    pid_kill(rows, cols);
   }
 
   if (key == KEY_DOWN) {
@@ -33,7 +65,7 @@ int handle_input(int *scroll_offset, int process_count, int visible_lines) {
   if (*scroll_offset > max_scroll) {
     *scroll_offset = max_scroll;
   }
-
+  
   return 0;
 }
 
@@ -46,9 +78,13 @@ void draw_ui(SystemInfo info, int scroll_offset) {
 
   // HEADER
 
-  mvprintw(1,1, "Memory Usage: %.2f / %.2f Gib", info.used_memory, 
-                                                 info.total_memory);
-  mvprintw(2,1, "CPU: %.2f%%", info.cpu_percentage);
+  mvprintw(1,1, "Memory Usage:");
+  mvprintw(1,38, "%.2f / %.2f Gib", info.used_memory,
+                                   info.total_memory);
+  draw_bar(1,15, 20, (info.used_memory * 100) / info.total_memory);
+  mvprintw(2,1, "CPU:");
+  mvprintw(2,29, "%.2f%%", info.cpu_percentage);
+  draw_bar(2,6, 20, info.cpu_percentage);
   mvprintw(3,1, "Uptime: %d h, %d m", info.uptime_hours, info.uptime_minutes);
   
   // PROCESSES

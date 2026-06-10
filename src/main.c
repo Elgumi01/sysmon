@@ -68,13 +68,14 @@ int main() {
   
 
   while (1) {
-    int rows = getmaxy(stdscr);
+    int rows, cols = 0;
+    getmaxyx(stdscr, rows, cols);
 
     int process_start_row = 6;
 
     int visible_lines = rows - process_start_row;
 
-    if (handle_input(&scroll_offset, info.process_count, visible_lines)) {
+    if (handle_input(&scroll_offset, info.process_count, visible_lines, rows, cols)) {
       break;
     }
 
