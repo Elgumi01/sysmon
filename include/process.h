@@ -2,11 +2,11 @@
 #define PROCESS_H
 
 typedef struct {
-  char pid[256];
-  char command[256];
+  char pid[256], command[256];
 
-  double mem;
-  double cpu;
+  double mem, cpu;
+  
+  int processes, running_processes;
 
   unsigned long long old_proc_cpu;
 } Process;

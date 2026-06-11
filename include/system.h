@@ -6,14 +6,14 @@
 typedef struct {
   double cpu_percentage;
 
-  double used_memory;
-  double total_memory;
+  double used_memory, total_memory;
 
-  int uptime_hours;
-  int uptime_minutes;
+  int uptime_hours, uptime_minutes;
 
-  Process process_list[3000];
-  int process_count;
+  Process process_list[4096];
+  int process_count, processes, running_processes;
+
+  char hostname[256], user[256], kernel[256], shell[256];
 
 } SystemInfo;
 

@@ -1,13 +1,16 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <ncurses.h>
 
 #include "cpu.h"
 #include "memory.h"
-#include "uptime.h"
+#include "system_info.h"
 #include "process.h"
 #include "ui.h"
 #include "system.h"
+
+#define CHAR_SIZE 256
 
 void update_system_info(SystemInfo *info, CpuStats *old_cpu) {
   // CPU
@@ -36,14 +39,29 @@ void update_system_info(SystemInfo *info, CpuStats *old_cpu) {
   double used_memory = (memory.memtotal - memory.memavailable) / 1024.0 / 1024.0; // Approximate real memory usage in GiB
   double total_memory = memory.memtotal / 1024.0 / 1024.0; // Converts the total memory into GiB
 
-  // UPTIME
-
-  UptimeStats uptime = get_uptime();
-
-  int uptime_hours = uptime.uptime_seconds / 3600;
-  int uptime_minutes = ((int)uptime.uptime_seconds % 3600) / 60;
-    
   // SYSTEM INFO
+
+  SystemStats systeminfo = get_system_info();
+
+  int uptime_hours = systeminfo.uptime_seconds / 3600;
+  int uptime_minutes = ((int)systeminfo.uptime_seconds % 3600) / 60;
+
+  char hostname[CHAR_SIZE] = {0};
+  snprintf(hostname, sizeof(hostname), systeminfo.hostname);
+
+  char user[CHAR_SIZE] = {0};
+  snprintf(user, sizeof(user), systeminfo.user);
+ 
+  char kernel[CHAR_SIZE] = {0};
+  snprintf(kernel, sizeof(kernel), systeminfo.kernel);
+
+  char shell[CHAR_SIZE] = {0};
+  snprintf(shell, sizeof(shell), systeminfo.shell);
+
+  int processes = systeminfo.processes;
+  int running_processes = systeminfo.running_processes;
+
+  // PASSING SYSTEM TO UI
 
   info->cpu_percentage = cpu_percentage;
 
@@ -52,10 +70,17 @@ void update_system_info(SystemInfo *info, CpuStats *old_cpu) {
 
   info->uptime_hours = uptime_hours;
   info->uptime_minutes = uptime_minutes;
-  
+  info->processes = processes;
+  info->running_processes = running_processes;
+
   info->process_count = 0;
   get_processes(info->process_list, &info->process_count, total_diff);
   *old_cpu = new_cpu;
+
+  strcpy(info->hostname, hostname);
+  strcpy(info->user, user);
+  strcpy(info->kernel, kernel);
+  strcpy(info->shell, shell);
 }
 
 int main() {
