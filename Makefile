@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -O2 -Iinclude -MMD -MP
-SRC = $(wildcard src/*.c)
+SRC = $(wildcard src/*.c) $(wildcard src/ui/*.c)
 OBJ = $(SRC:.c=.o)
 DEP = $(OBJ:.o=.d)
 LIBS = -lncurses -ltinfo
@@ -20,7 +20,7 @@ $(TARGET): $(OBJ)
 -include $(DEP)
 
 clean:
-	rm -f src/*.o src/*.d $(TARGET)
+	rm -f src/*.o src/*.d src/ui/*.d src/ui/*.o $(TARGET)
 
 install: $(TARGET)
 	install -Dm755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
