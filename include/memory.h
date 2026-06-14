@@ -7,6 +7,4 @@ typedef struct {
 
 MemoryStatus memory_usage();
 
-#endif 
-
-
+#endif

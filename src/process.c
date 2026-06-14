@@ -2,10 +2,12 @@
 #include <dirent.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
+
+#include "config.h"
 
 #include "process.h"
 
-#define MAX_PROCESSES 3000
 #define PATH_BUFFER 512
 #define LINE_BUFFER 256
 
@@ -21,18 +23,18 @@ void get_processes(Process process_list[], int *process_count, double delta_tota
 
   int process_index = 0;
 
-  while ((entry = readdir(proc)) != NULL) { // Reads /proc files(PIDs + system dirs)
+  while ((entry = readdir(proc)) != NULL) {
 
-    if (process_index >= MAX_PROCESSES) break; // Limit number of process collected
-    if (!isdigit(entry->d_name[0])) continue; // Only keep numeric dirs(PIDs)
+    if (process_index >= PROCESS_LIST_BUFFER) break;
+    if (!isdigit(entry->d_name[0])) continue;
 
     char comm_path[PATH_BUFFER] = {0};
     char mem_path[PATH_BUFFER] = {0};
     char cpu_path[PATH_BUFFER] = {0};
-    
-    snprintf(comm_path, sizeof(comm_path), "/proc/%s/comm", entry->d_name); // Build PID path to get the command name
-    snprintf(mem_path, sizeof(mem_path), "/proc/%s/status", entry->d_name); // Build PID path to get the memory value
-    snprintf(cpu_path, sizeof(cpu_path), "/proc/%s/stat", entry->d_name); // Build PID path to get the memory value
+
+    snprintf(comm_path, sizeof(comm_path), "/proc/%s/comm", entry->d_name);
+    snprintf(mem_path, sizeof(mem_path), "/proc/%s/status", entry->d_name);
+    snprintf(cpu_path, sizeof(cpu_path), "/proc/%s/stat", entry->d_name);
 
     FILE *f_command = fopen(comm_path, "r");
     FILE *f_memory = fopen(mem_path, "r");
@@ -45,9 +47,9 @@ void get_processes(Process process_list[], int *process_count, double delta_tota
 
       continue;
     }
-    
-    // COMMAND
-  
+
+    /* COMMAND */
+
     char command_line[LINE_BUFFER] = {0};
     char process_command[LINE_BUFFER] = {0};
     if (fgets(command_line, sizeof(command_line), f_command) == NULL) {
@@ -57,8 +59,8 @@ void get_processes(Process process_list[], int *process_count, double delta_tota
     }
     sscanf(command_line, "%255s", process_command);
 
-    // MEMORY
-    
+    /* MEMORY */
+
     char memory_line[LINE_BUFFER] = {0};
     unsigned long long process_memory = 0;
 
@@ -69,13 +71,13 @@ void get_processes(Process process_list[], int *process_count, double delta_tota
       }
     }
 
-    // CPU
+    /* CPU */
 
     char cpu_line[LINE_BUFFER] = {0};
     unsigned long long process_utime = 0;
     unsigned long long process_stime = 0;
 
-    
+
     if (fgets(cpu_line, sizeof(cpu_line), f_cpu) == NULL) {
       fprintf(stderr, "Error opening /proc/PID/stat\n");
       fclose(f_cpu);
@@ -88,32 +90,29 @@ void get_processes(Process process_list[], int *process_count, double delta_tota
     );
 
     unsigned long new_proc_time = process_utime + process_stime;
-    
     unsigned long old_proc_time = process_list[process_index].old_proc_cpu;
-    
-    if (strcmp(process_list[process_index].pid, entry->d_name) == 0) {
-      old_proc_time = process_list[process_index].old_proc_cpu;
-    }
+
+    int pid = (int)strtol(entry->d_name, NULL, 10);
+
+    if (old_proc_time == 0) process_list[process_index].cpu = 0;
 
     unsigned long delta_proc = new_proc_time - old_proc_time;
-    
+
     process_list[process_index].old_proc_cpu = new_proc_time;
-  
+
     if (delta_total_cpu > 0) {
         double cpu_percent = 100.0 * delta_proc / delta_total_cpu;
         process_list[process_index].cpu = cpu_percent;
     }
 
-    // SAVING
+    /* SAVING */
 
-    snprintf(process_list[process_index].pid,
-             sizeof(process_list[process_index].pid),
-             "%s", entry->d_name); // Save PID value to process_list struct
+    process_list[process_index].pid = pid;
 
     snprintf(process_list[process_index].command,
              sizeof(process_list[process_index].command),
-             "%s", process_command); // Save command name to process_list struct
-    
+             "%s", process_command);
+
     process_list[process_index].mem = process_memory;
 
     process_index++;
@@ -122,8 +121,8 @@ void get_processes(Process process_list[], int *process_count, double delta_tota
     fclose(f_memory);
     fclose(f_cpu);
   }
-  
+
   closedir(proc);
 
-  *process_count = process_index; // Give process_count the process_index value to limit the process showing
+  *process_count = process_index;
 }

@@ -1,12 +1,15 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#include <sys/types.h>
+
+#include "config.h"
+
 typedef struct {
-  char pid[256], command[256];
+  pid_t pid;
+  char command[PROCESS_COMMAND_BUFFER];
 
   double mem, cpu;
-  
-  int processes, running_processes;
 
   unsigned long long old_proc_cpu;
 } Process;
