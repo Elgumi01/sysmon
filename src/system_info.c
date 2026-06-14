@@ -9,14 +9,14 @@
 
 #include "system_info.h"
 
-#define CHAR_SIZE 256
+#define CHAR_BUFFER 256
 
-SystemStats get_system_info() {
+SystemInfo get_system_info() {
   FILE *f_uptime = fopen("/proc/uptime", "r");
   FILE *f_stat = fopen("/proc/stat", "r");
   DIR *d_proc = opendir("/proc");
 
-  SystemStats stats = {0};
+  SystemInfo stats = {0};
 
   if (f_uptime == NULL) {
     fprintf(stderr, "Error opening /proc/uptime\n");
@@ -33,50 +33,50 @@ SystemStats get_system_info() {
     return stats;
   }
 
-  char uptime_line[CHAR_SIZE] = {0};
+  char uptime_line[CHAR_BUFFER] = {0};
 
   if (fgets(uptime_line, sizeof(uptime_line), f_uptime) == NULL) {
     fprintf(stderr, "Error reading /proc/uptime\n");
     fclose(f_uptime);
     return stats;
   }
-  
-  // HOSTNAME
-  
+
+  /* HOSTNAME */
+
   gethostname(stats.hostname, sizeof(stats.hostname));
-  
-  // USER
-  
+
+  /* USER */
+
   struct passwd *pw = getpwuid(getuid());
 
   snprintf(stats.user, sizeof(stats.user), pw->pw_name);
 
-  // KERNEL
-  
+  /* KERNEL */
+
   struct utsname uts;
-  
+
   if (uname(&uts) == -1) {
     fprintf(stderr, "Error getting kernel info via uname\n");
     return stats;
   }
-  
+
   snprintf(stats.kernel, sizeof(stats.kernel), uts.release);
 
 
-  // SHELL
-  
+  /* SHELL */
+
   char *shell = getenv("SHELL");
-  
+
   char *name = strrchr(shell, '/');
 
   if (name) {
     name++;
   }
-  
+
   snprintf(stats.shell, sizeof(stats.shell), name);
-  
-  // PROCESSES
-  
+
+  /* PROCESSES */
+
   struct dirent *entry;
   int processes = 0;
 
@@ -88,26 +88,26 @@ SystemStats get_system_info() {
 
   stats.processes = processes;
 
-  // PROCESSES RUNNING
-  
+  /* PROCESSES RUNNING */
+
   int running_processes;
-  char running_line[CHAR_SIZE] = {0};
+  char running_line[CHAR_BUFFER] = {0};
 
   while (fgets(running_line, sizeof(running_line), f_stat)) {
     if (sscanf(running_line, "procs_running %d", &running_processes) == 1) {
       break;
     }
   }
-  
+
   stats.running_processes = running_processes;
 
-  // UPTIME
+  /* UPTIME */
 
   if(sscanf(uptime_line, "%lf %lf", &stats.uptime_seconds, &stats.idle_seconds) != 2) {
     fprintf(stderr, "Error parsing /proc/uptime\n");
     fclose(f_uptime);
     return stats;
-  } 
+  }
 
   fclose(f_uptime);
   fclose(f_stat);
