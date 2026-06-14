@@ -1,0 +1,14 @@
+#ifndef LIMITS_H
+#define LIMITS_H
+
+#define HOSTNAME_BUFFER 128
+#define USER_BUFFER 64
+#define KERNEL_BUFFER 128
+#define SHELL_BUFFER 32
+
+#define PROCESS_LIST_BUFFER 4096
+#define PROCESS_COMMAND_BUFFER 256
+
+#define PROC_HEADER_LINES 3
+
+#endif
